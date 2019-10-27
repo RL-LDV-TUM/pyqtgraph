@@ -14,7 +14,7 @@ __all__ = ['ScatterPlotWidget']
 class ScatterPlotWidget(QtGui.QSplitter):
     """
     This is a high-level widget for exploring relationships in tabular data.
-        
+        a
     Given a multi-column record array, the widget displays a scatter plot of a
     specific subset of the data. Includes controls for selecting the columns to
     plot, filtering data, and determining symbol color and shape.

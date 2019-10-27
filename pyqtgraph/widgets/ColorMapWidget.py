@@ -3,6 +3,7 @@ from .. import parametertree as ptree
 import numpy as np
 from ..pgcollections import OrderedDict
 from .. import functions as fn
+from ..functions import intColor
 
 __all__ = ['ColorMapWidget']
 
@@ -167,6 +168,7 @@ class RangeColorMapItem(ptree.types.SimpleParameter):
     
     def __init__(self, name, opts):
         self.fieldName = name
+        self.autorange = False
         units = opts.get('units', '')
         ptree.types.SimpleParameter.__init__(self, 
             name=name, autoIncrementName=True, type='colormap', removable=True, renamable=True, 
@@ -187,6 +189,11 @@ class RangeColorMapItem(ptree.types.SimpleParameter):
     
     def map(self, data):
         data = data[self.fieldName]
+        if not self.autorange:
+            with self.treeChangeBlocker():
+                self.child('Min').setValue(data.min())
+                self.child('Max').setValue(data.max())
+                self.autorange = True
         
         scaled = np.clip((data-self['Min']) / (self['Max']-self['Min']), 0, 1)
         cmap = self.value()
@@ -210,10 +217,14 @@ class EnumColorMapItem(ptree.types.GroupParameter):
         childs = [{'name': v, 'type': 'color'} for v in vals]
         
         childs = []
+        n = len(vals)
+        i = 0
         for val,vname in vals.items():
-            ch = ptree.Parameter.create(name=vname, type='color')
+            color = intColor(i, hues=n)
+            ch = ptree.Parameter.create(name=vname, type='color', value=color)
             ch.maskValue = val
             childs.append(ch)
+            i+=1
         
         ptree.types.GroupParameter.__init__(self, 
             name=name, autoIncrementName=True, removable=True, renamable=True, 

@@ -127,6 +127,7 @@ class RangeFilterItem(ptree.types.SimpleParameter):
         self.fieldName = name
         units = opts.get('units', '')
         self.units = units
+        self.autorange = False
         ptree.types.SimpleParameter.__init__(self, 
             name=name, autoIncrementName=True, type='bool', value=True, removable=True, renamable=True, 
             children=[
@@ -137,6 +138,12 @@ class RangeFilterItem(ptree.types.SimpleParameter):
             
     def generateMask(self, data, mask):
         vals = data[self.fieldName][mask]
+        if not self.autorange:
+            with self.treeChangeBlocker():
+                self.child('Min').setValue(vals.min()-0.1)
+                self.child('Max').setValue(vals.max()+0.1)
+                self.autorange = True
+
         mask[mask] = (vals >= self['Min']) & (vals < self['Max'])  ## Use inclusive minimum and non-inclusive maximum. This makes it easier to create non-overlapping selections
         return mask
     
